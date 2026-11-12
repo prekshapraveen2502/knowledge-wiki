@@ -1,0 +1,303 @@
+
+<!doctype html>
+
+<html>
+<head>
+  <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
+  <meta name="theme-color" content="#4F7DC9">
+  <meta charset="UTF-8">
+  <title>Build and query a knowledge wiki with Claude Managed Agents</title>
+  <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Source+Code+Pro:400|Roboto:400,300,400italic,500,700|Roboto+Mono">
+  <link rel="stylesheet" href="//fonts.googleapis.com/icon?family=Material+Icons">
+  <link rel="stylesheet" href="https://storage.googleapis.com/claat-public/codelab-elements.css">
+  <style>
+    .success {
+      color: #1e8e3e;
+    }
+    .error {
+      color: red;
+    }
+  </style>
+</head>
+<body>
+  <google-codelab-analytics gaid="UA-49880327-14" ga4id=""></google-codelab-analytics>
+  <google-codelab codelab-gaid=""
+                  codelab-ga4id=""
+                  id="knowledge-wiki-codelab"
+                  title="Build and query a knowledge wiki with Claude Managed Agents"
+                  environment="web"
+                  feedback-link="https://github.com/prekshapraveen2502/knowledge-wiki/issues">
+    
+      <google-codelab-step label="Overview" duration="0">
+        <p>This codelab walks through <a href="https://github.com/prekshapraveen2502/knowledge-wiki" target="_blank">my repo</a>, which holds Anthropic&#39;s knowledge-wiki quickstart (from <code>anthropics/claude-quickstarts</code>, MIT license) and a small web demo on top of it.</p>
+<p>The idea, simply: instead of rereading a whole filing cabinet for every question, an agent reads it once and writes a well-sourced binder. Later questions are answered from the binder.</p>
+<h2 is-upgraded>What you&#39;ll build</h2>
+<ul>
+<li>A knowledge wiki: plain markdown pages in a Managed Agents memory store, built from the SEC filings of a real take-private deal (Squarespace). Every fact carries its source and the date it was true.</li>
+<li>A small FastAPI page that asks the wiki a question and shows the answer, its sources, and what it cost.</li>
+</ul>
+<h2 class="checklist" is-upgraded>What you&#39;ll learn</h2>
+<ul class="checklist">
+<li>How one Managed Agents session runs a whole multi-agent workflow (extract, resolve, analyze, organize).</li>
+<li>How to check what actually ran, from the platform&#39;s own records, instead of trusting an agent&#39;s report.</li>
+<li>How to ask the wiki read-only, and how its cost compares with searching the raw documents.</li>
+<li>How to keep a paid run from going wrong: budgets, clean-up, and the mistakes I made.</li>
+</ul>
+<h2 is-upgraded>What you&#39;ll need</h2>
+<ul>
+<li>A Mac or Linux machine with Python 3.11 or later.</li>
+<li>An Anthropic API key with Managed Agents access.</li>
+<li>API credit. The build is a paid run: in my run the notebook estimated $25.77 before starting and the platform metered $18.86. Have more credit than the budget you set.</li>
+</ul>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="How it works" duration="0">
+        <p>The notebook does two things.</p>
+<p><strong>Build (once).</strong> One Managed Agents session runs one <em>dynamic workflow</em>, described in one message to a lead agent. The lead agent starts other agents in four phases:</p>
+<ol type="1">
+<li><strong>Extract</strong>: one <code>wiki-extractor</code> per batch of documents files what the documents say into the wiki.</li>
+<li><strong>Resolve</strong>: one <code>wiki-resolver</code> works through the wiki&#39;s open questions.</li>
+<li><strong>Analyze</strong>: one <code>wiki-analyzer</code> per batch re-reads it against the wiki and adds what was missed.</li>
+<li><strong>Organize</strong>: one <code>wiki-organizer</code> tidies the whole wiki and its index.</li>
+</ol>
+<p>The phases really are a sequence: each starts only after every agent of the previous one has finished.</p>
+<p><strong>Ask (many times).</strong> Each question opens a fresh session with the wiki mounted <strong>read-only</strong>, so asking can never change the wiki. The analyst agent may only <code>read</code>, <code>glob</code> and <code>grep</code>.</p>
+<p>The files that implement this:</p>
+<table>
+<tr><td colspan="1" rowspan="1"><p>File</p>
+</td><td colspan="1" rowspan="1"><p>What it does</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p><code>distill_documents_into_knowledge_wiki.ipynb</code></p>
+</td><td colspan="1" rowspan="1"><p>The notebook: run it top to bottom</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p><code>utilities.py</code></p>
+</td><td colspan="1" rowspan="1"><p>The notebook&#39;s helpers: following a run, checks, costs, clean-up</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p><code>prompts/</code></p>
+</td><td colspan="1" rowspan="1"><p>The agents&#39; instructions</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p><code>demo/</code></p>
+</td><td colspan="1" rowspan="1"><p>My web demo</p>
+</td></tr>
+</table>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Get the code and set up Python" duration="0">
+        <pre><code language="language-bash" class="language-bash">git clone https://github.com/prekshapraveen2502/knowledge-wiki.git
+cd knowledge-wiki
+python3.11 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+python -c &#34;import anthropic; print(anthropic.__version__)&#34;
+</code></pre>
+<p>The last line should print a version starting with <code>2.</code> (the requirements pin <code>anthropic>=2.0.0,<3</code>).</p>
+<aside class="special"><p> If you use conda, run <code>conda deactivate</code> first so the venv&#39;s Python is the one you get. </p>
+</aside>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Configure keys and settings" duration="0">
+        <p>Create a file named <code>.env</code> in the repo folder. It is in <code>.gitignore</code>, so it never gets committed.</p>
+<pre><code>ANTHROPIC_API_KEY=sk-ant-...
+COOKBOOK_BUDGET_USD=30
+COOKBOOK_RECORDS_DIR=/full/path/to/a/folder/outside/the/repo
+</code></pre>
+<ul>
+<li><code>COOKBOOK_BUDGET_USD</code> caps the build. It must be at least the estimate the notebook prints, and it should be <strong>below your credit balance</strong>, so the budget stops the build before your credit runs out.</li>
+<li><code>COOKBOOK_RECORDS_DIR</code> is where the run&#39;s records go. Write the full path: <code>~</code> is not expanded. Without it, records go to a temporary folder that may be cleared on restart.</li>
+</ul>
+<p>The fetch script reads your SEC contact from the shell, not from <code>.env</code>:</p>
+<pre><code language="language-bash" class="language-bash">export EDGAR_USER_AGENT=&#34;Your Name your-email@example.com&#34;
+</code></pre>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Fetch the filings" duration="0">
+        <pre><code language="language-bash" class="language-bash">python fetch_data_room.py --tier=core
+ls data_room/docs | wc -l
+</code></pre>
+<p>You should see 8 documents. Fetching from EDGAR is free; <code>data_room/</code> is in <code>.gitignore</code>.</p>
+<p>I skipped the optional board deck (<code>fetch_real_deck.py</code>), since the run recorded in the original notebook was built without it.</p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Run the setup cells" duration="0">
+        <p>Open the notebook in VS Code (or Jupyter) with the <code>.venv</code> kernel. Run cells <strong>one at a time</strong>, not Run All: Run All would carry straight on into the paid cells.</p>
+<p>Run the cells up to, but not including, &#34;The consolidation prompts&#34;. These are my run&#39;s outputs, so you can compare:</p>
+<table>
+<tr><td colspan="1" rowspan="1"><p>Cell</p>
+</td><td colspan="1" rowspan="1"><p>Expected</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p>Get the documents</p>
+</td><td colspan="1" rowspan="1"><p><code>10 documents, 2782 KB text</code></p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p>Normalize PDFs and Word files</p>
+</td><td colspan="1" rowspan="1"><p><code>corpus complete: 10 documents</code></p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p>The schema and the wiki&#39;s prompts</p>
+</td><td colspan="1" rowspan="1"><p><code>environment env_... · wiki store memstore_...</code></p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p>Batch the documents</p>
+</td><td colspan="1" rowspan="1"><p><code>10 documents -> 29 files in 25 batches</code></p>
+</td></tr>
+</table>
+<aside class="warning"><p> From the schema cell on, the notebook creates things on your Anthropic account and lists them in <code>created.json</code> in the records folder. Don&#39;t restart the kernel from here until the build has finished: a restart starts a new records folder and a second set of everything. </p>
+</aside>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Check the estimate and the budget" duration="0">
+        <p>Run the cell under <strong>&#34;The consolidation prompts&#34;</strong>. It prints an estimate, checks it against your budget, and creates the five agents. My run:</p>
+<pre><code>Estimated list price $25.77: extraction on claude-haiku-5-5 $9.87 + resolver $0.63, consolidation on claude-haiku-5-5 $12.75 (analyzers) + $2.10 (organizer), lead agent on claude-sonnet-5-5 $0.42. ...
+Budget: $30. OK to run, but under twice the estimate: a run that costs more than estimated would stop part-way. Consider raising it.
+</code></pre>
+<p>If the budget line doesn&#39;t show the number you set, stop: <code>.env</code> wasn&#39;t saved before the setup cell ran.</p>
+<aside class="warning"><p> Run this cell only once. Each run creates the agents again. </p>
+</aside>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Run the build" duration="0">
+        <p>Run the cell under <strong>&#34;Describe the goal&#34;</strong> (free: it only prints the message), then the cell under <strong>&#34;Run the build&#34;</strong>. Keep the machine awake (<code>caffeinate -i</code> in another Terminal on a Mac) and don&#39;t touch the kernel.</p>
+<p>You&#39;ll see each phase and thread start. My run ended with:</p>
+<pre><code>After 30.5 minutes: the agent finished, with no run left open.
+The lead agent&#39;s report: {&#34;batches_expected&#34;: 25, &#34;batches_extracted&#34;: 25, ..., &#34;resolved&#34;: 10, &#34;unresolvable&#34;: 0, &#34;still_open&#34;: 294, &#34;batches_analyzed&#34;: 25, &#34;organized&#34;: true, &#34;index_entries&#34;: 219, &#34;failures&#34;: []}
+</code></pre>
+<p>The parts to check are <code>batches_extracted</code> and <code>batches_analyzed</code> equal to 25, <code>organized: true</code> and an empty <code>failures</code> list. The other counts will differ from run to run.</p>
+<p>If the build errors, <strong>don&#39;t rerun the cell</strong>: that starts a second paid build. See Troubleshooting.</p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Verify the build" duration="0">
+        <p>An agent&#39;s report is only its own claim. The next cells check the platform&#39;s records instead.</p>
+<table>
+<tr><td colspan="1" rowspan="1"><p>Cell</p>
+</td><td colspan="1" rowspan="1"><p>What my run showed</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p>Build cost by agent</p>
+</td><td colspan="1" rowspan="1"><p><code>The session's list cost, as the platform metered it: $18.86 (budget $30)</code></p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p>Check what ran</p>
+</td><td colspan="1" rowspan="1"><p>All 17 checks passed: 52 threads, phases in order, all 25 inputs read by an extractor and by an analyzer, and <code>Documents no extractor reported filing: none</code></p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p>Read the wiki</p>
+</td><td colspan="1" rowspan="1"><p><code>221 memories, 1,257,528 bytes</code> and <code>_schema.md is unchanged</code></p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p>File check</p>
+</td><td colspan="1" rowspan="1"><p>stubs, not indexed, indexed missing: all <code>none</code>; 1 dangling link; 6 name mismatches</p>
+</td></tr>
+</table>
+<p>The 6 name mismatches are files whose front-matter name doesn&#39;t match the file name, a slip by the organizer. The run recorded in the original notebook had none.</p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Ask the wiki" duration="0">
+        <p>Run the cell under <strong>&#34;2. Ask the wiki&#34;</strong> (it creates the analyst agent and defines <code>ask</code>), then the four question cells one at a time. Each costs cents or less. What a right answer does:</p>
+<table>
+<tr><td colspan="1" rowspan="1"><p>Question</p>
+</td><td colspan="1" rowspan="1"><p>A right answer</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p>Per-share merger consideration</p>
+</td><td colspan="1" rowspan="1"><p>Leads with $46.50 and gives the path from $44.00</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p>FY2023 adjusted EBITDA</p>
+</td><td colspan="1" rowspan="1"><p>Keeps the reported $235.4M and the ~$252M estimate apart and says they aren&#39;t comparable</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p>Buyer-side entities</p>
+</td><td colspan="1" rowspan="1"><p>Follows the chain of look-alike names and says only the merger subsidiary merged into the company</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p>Revenue for fiscal 2025</p>
+</td><td colspan="1" rowspan="1"><p>Refuses: &#34;Not in the wiki&#34;, because the company was taken private</p>
+</td></tr>
+</table>
+<p>Read the answers critically. My buyer answer, for example, listed a founder&#39;s surname among the co-investors even though the question asked for entities only.</p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Compare the wiki with the raw documents" duration="0">
+        <p>The cell under <strong>&#34;What it costs&#34;</strong> asks 6 held-out questions twice: once from the wiki (Haiku) and once by searching the raw documents (Sonnet). Then run the cost table cell. My run:</p>
+<table>
+<tr><td colspan="1" rowspan="1"></td><td colspan="1" rowspan="1"><p>Mean cost per question</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p>With the wiki (<code>claude-haiku-5-5</code>)</p>
+</td><td colspan="1" rowspan="1"><p>$0.004</p>
+</td></tr>
+<tr><td colspan="1" rowspan="1"><p>Searching the raw documents (<code>claude-sonnet-5-5</code>)</p>
+</td><td colspan="1" rowspan="1"><p>$0.058</p>
+</td></tr>
+</table>
+<p>The wiki was cheaper on 6 of 6, by $0.027 to $0.094 per question, so the $18.86 build breaks even after about 349 questions on cost alone. Six questions are a sample, not a benchmark: compare the collapsed answers with the answer key in the comments of the <code>BATTERY</code> list in that cell.</p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Clean up and keep the wiki" duration="0">
+        <p>Run the export cell (it saves every question session&#39;s transcript to the records folder), then the clean-up cell. By default it <strong>keeps the wiki store</strong> and removes everything else:</p>
+<pre><code>Kept the wiki store: memstore_.... To delete it later: client.beta.memory_stores.delete(&#39;memstore_...&#39;)
+</code></pre>
+<p>Copy that store id: the demo needs it. Afterwards, <code>created.json</code> in the records folder should list only the wiki store.</p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Run the web demo" duration="0">
+        <p>The demo asks the kept wiki from a browser. Each question gets a fresh read-only session, which the app archives as soon as the answer is in, and interrupts first if it is still running.</p>
+<pre><code language="language-bash" class="language-bash">pip install -r demo/requirements.txt
+python demo/setup_demo.py
+</code></pre>
+<p><code>setup_demo.py</code> creates the demo&#39;s own analyst agent and environment (no model runs) and prints two lines. Add them to <code>.env</code> with the store id:</p>
+<pre><code>WIKI_STORE_ID=memstore_...
+DEMO_ENVIRONMENT_ID=env_...
+DEMO_AGENT_ID=agent_...
+</code></pre>
+<p>It refuses to run a second time once those ids are in <code>.env</code>, so it can&#39;t make duplicates. Then:</p>
+<pre><code language="language-bash" class="language-bash">uvicorn demo.app:app --host 127.0.0.1 --port 8000
+</code></pre>
+<p>Open http://127.0.0.1:8000, pick one of the example questions, and you&#39;ll get the answer with each source shown as a tag, and the reads, tokens, cost and time below it. The answer is inserted into the page as text, never as HTML, because it comes from documents an agent read.</p>
+<p>When you&#39;re done:</p>
+<pre><code language="language-bash" class="language-bash">python demo/teardown_demo.py
+</code></pre>
+<p>It archives the demo&#39;s agent and environment and keeps the wiki.</p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Troubleshooting: what went wrong for me" duration="0">
+        <p><strong>The build stopped with </strong></p>
+<p><strong><code>billing_error</code></strong></p>
+<p><strong>.</strong> My first two builds ran out of credit partway and left nothing usable. Have more credit than <code>COOKBOOK_BUDGET_USD</code> before starting, and keep the budget below your balance.</p>
+<p><strong>A second set of everything appeared.</strong> Restarting the kernel after the schema cell starts a new records folder and creates a new environment, store and agents; rerunning the consolidation-prompts cell creates the agents again. Every records folder&#39;s <code>created.json</code> lists what that attempt created, so you can archive the agents, sessions and environments and delete the uploads and stores it lists before trying again.</p>
+<p><strong>An interrupted question left a session open.</strong> The notebook&#39;s <code>ask</code> has no clean-up of its own, so an interrupted question&#39;s session stays open until the clean-up cell. The demo app closes its sessions in a <code>finally</code> block instead.</p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Wrap up" duration="0">
+        <p>You built a wiki once, checked it against the platform&#39;s records, asked it questions read-only, compared its cost with searching the raw documents, and put a small web page on top.</p>
+<p>Further reading: the quickstart&#39;s own README (below mine in <code>README.md</code>) and <code>skill.md</code> cover the other corpus tiers and building from your own documents.</p>
+
+
+      </google-codelab-step>
+    
+  </google-codelab>
+
+  <script src="https://storage.googleapis.com/claat-public/native-shim.js"></script>
+  <script src="https://storage.googleapis.com/claat-public/custom-elements.min.js"></script>
+  <script src="https://storage.googleapis.com/claat-public/prettify.js"></script>
+  <script src="https://storage.googleapis.com/claat-public/codelab-elements.js"></script>
+  <script src="//support.google.com/inapp/api.js"></script>
+
+</body>
+</html>
