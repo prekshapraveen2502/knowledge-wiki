@@ -1,3 +1,94 @@
+# Knowledge wiki: my run of Anthropic's quickstart
+
+This repo holds the [knowledge-wiki quickstart](https://github.com/anthropics/claude-quickstarts/tree/main/managed-agents/knowledge-wiki)
+from `anthropics/claude-quickstarts`, used under its MIT license (see `LICENSE`), run end to end on the
+`core` tier for DAMG 7245, plus a small web demo in `demo/` that asks the built wiki questions.
+
+What I changed from the quickstart as shipped:
+
+- `distill_documents_into_knowledge_wiki.ipynb`: no code changes. Its saved outputs are now from my run
+  instead of the recorded one, so every number below can be checked in the notebook.
+- `.gitignore`: added `.venv/` and `.DS_Store`.
+- `demo/`: new (see [Run the demo](#run-the-demo)).
+
+The quickstart's own README follows mine, unchanged.
+
+## What I ran
+
+- Corpus: the `core` tier, 8 SEC filings fetched from EDGAR plus the quickstart's 2 synthetic example files:
+  10 documents, split into 29 files in 25 batches. The optional board deck was not fetched.
+- Models: `claude-haiku-5-5` for extraction, consolidation and the wiki questions; `claude-sonnet-5-5` for the
+  lead agent and the raw-documents baseline.
+- Build budget: $30 (`COOKBOOK_BUDGET_USD`).
+
+## Results
+
+All figures are from the notebook's saved outputs; the section of the notebook each comes from is named.
+
+| What | My run | Notebook section |
+| --- | --- | --- |
+| Build cost, estimated before running | $25.77 | The consolidation prompts |
+| Build cost, as the platform metered it | $18.86 | Build cost by agent |
+| Build time | 30.5 minutes | Run the build |
+| Batches extracted / analyzed | 25 / 25, no failures | Run the build (the lead agent's report) |
+| Open questions resolved / unresolvable / still open | 10 / 0 / 294 | Run the build (the lead agent's report) |
+| Index entries | 219 | Run the build (the lead agent's report) |
+| Wiki size | 221 files, 1,257,528 bytes; `_schema.md` unchanged | Read the wiki |
+
+Checks on the build (Check what ran): all 17 checks on the platform's records passed (52 threads, each phase
+started after the last one ended, every one of the 25 inputs read by an extractor and by an analyzer), and no
+document went unfiled. The file check on the wiki found no stubs, no unindexed files and no missing index
+entries; it did find 1 dangling link and 6 files whose front-matter name doesn't match the file name.
+
+Wiki against raw documents, on the notebook's 6 held-out questions (What it costs):
+
+| | Mean cost per question, from tokens at list prices |
+| --- | --- |
+| With the wiki (`claude-haiku-5-5`) | $0.004 |
+| Searching the raw documents (`claude-sonnet-5-5`) | $0.058 |
+
+The wiki was cheaper on all 6, by $0.027 to $0.094 per question, so on cost alone the $18.86 build breaks even
+after about 349 questions. Six questions are a sample, not a benchmark; the answers themselves are in the
+notebook, collapsed under What it costs.
+
+<!-- TODO (Preksha): say whether the answers were right, after checking them against the answer key in the
+     comments of the BATTERY list in the What it costs cell. -->
+
+## Run the demo
+
+`demo/` is a FastAPI app with one page: type a question (or pick one of the notebook's four) and get the wiki's
+answer with its sources, and what it cost. Each question opens a fresh session with the wiki mounted
+read-only, as the notebook's `ask` does, and the session is archived when the answer is in.
+
+It needs a wiki built by the notebook and kept (the clean-up cell keeps it unless `COOKBOOK_KEEP_WIKI=0`).
+
+```bash
+pip install -r demo/requirements.txt
+python demo/setup_demo.py        # once: creates the demo's agent and environment, prints two .env lines
+```
+
+Add to `.env` (never committed):
+
+```
+WIKI_STORE_ID=memstore_...        # printed by the notebook's clean-up cell
+DEMO_ENVIRONMENT_ID=env_...       # printed by setup_demo.py
+DEMO_AGENT_ID=agent_...           # printed by setup_demo.py
+```
+
+Then run it and open http://127.0.0.1:8000:
+
+```bash
+uvicorn demo.app:app --host 127.0.0.1 --port 8000
+```
+
+When you're done: `python demo/teardown_demo.py` archives the demo's agent and environment and keeps the wiki.
+
+## Generative-AI use
+
+<!-- TODO (Preksha): write this section yourself, following the course's policy. -->
+
+---
+
 # Knowledge wiki with a dynamic workflow
 
 *A knowledge wiki for agentic retrieval that keeps its sources and its conflicts. For developers whose agents answer repeated questions over a slow-changing set of documents. A tutorial: run it top to bottom once on the worked example, then point it at your own corpus.*
