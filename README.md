@@ -4,6 +4,9 @@ This repo holds the [knowledge-wiki quickstart](https://github.com/anthropics/cl
 from `anthropics/claude-quickstarts`, used under its MIT license (see `LICENSE`), run end to end on the
 `core` tier for DAMG 7245, plus a small web demo in `demo/` that asks the built wiki questions.
 
+Codelab (step-by-step walkthrough of the run and the demo):
+https://prekshapraveen2502.github.io/knowledge-wiki/knowledge-wiki-codelab/
+
 What I changed from the quickstart as shipped:
 
 - `distill_documents_into_knowledge_wiki.ipynb`: no code changes. Its saved outputs are now from my run
