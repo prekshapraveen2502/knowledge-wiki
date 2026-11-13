@@ -12,7 +12,6 @@ What I changed from the quickstart as shipped:
 - `distill_documents_into_knowledge_wiki.ipynb`: no code changes. Its saved outputs are now from my run
   instead of the recorded one, so every number below can be checked in the notebook.
 - `.gitignore`: added `.venv/` and `.DS_Store`.
-- `demo/`: new (see [Run the demo](#run-the-demo)).
 
 The quickstart's own README follows mine, unchanged.
 
