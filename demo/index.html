@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Deal wiki: Squarespace take-private</title>
+<title>Brochure wiki: AI companies from career fairs</title>
 <link rel="icon" href="data:,">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -154,35 +154,36 @@
 
 <div class="layout">
   <section class="ask-col" aria-label="Ask a question">
-    <div class="mark"><i></i>Deal wiki <span>Squarespace take-private</span></div>
-    <h1>Ask the deal’s documents</h1>
-    <p class="lede">An agent read the deal’s SEC filings once and wrote them into a wiki. Answers come only from
-      that wiki, with a numbered source for every fact. If the wiki doesn’t cover something, the answer says so.</p>
+    <div class="mark"><i></i>Brochure wiki <span>AI companies from career fairs</span></div>
+    <h1>Ask the career-fair brochures</h1>
+    <p class="lede">An agent read 12 brochures from AI companies at career fairs once and wrote them into a wiki.
+      Answers come only from that wiki, with a numbered source for every fact. If the brochures don’t say
+      something, the answer says so.</p>
 
     <label for="q">Your question</label>
-    <textarea id="q" maxlength="1000" placeholder="For example: what did the buyer pay per share?"></textarea>
+    <textarea id="q" maxlength="1000" placeholder="For example: which companies offer governance for AI agents?"></textarea>
     <div class="row">
       <span class="keys">⌘ + Enter to ask</span>
       <button class="ask" id="ask">Ask</button>
     </div>
 
     <div class="examples">
-      <h2>Try a question from the notebook</h2>
-      <button type="button" data-q="What is the per-share merger consideration, and how did it change during the process?">
-        <span class="kind">A price that changed across filings</span>
-        <span class="q">What is the per-share merger consideration, and how did it change?</span>
+      <h2>Try one of these</h2>
+      <button type="button" data-q="What does Barndoor's AI gateway enforce on every call, and what does it connect to?">
+        <span class="kind">One company, in detail</span>
+        <span class="q">What does Barndoor’s AI gateway enforce on every call?</span>
       </button>
-      <button type="button" data-q="I've seen more than one FY2023 adjusted EBITDA figure in this room. Reconcile them - are they comparable?">
-        <span class="kind">Two figures on different bases</span>
-        <span class="q">Reconcile the FY2023 adjusted EBITDA figures: are they comparable?</span>
+      <button type="button" data-q="Which companies in the brochures offer governance, security or access control for AI agents, and how do their approaches differ?">
+        <span class="kind">Comparing companies</span>
+        <span class="q">Which companies offer governance or security for AI agents, and how do they differ?</span>
       </button>
-      <button type="button" data-q="Which legal entities make up the buyer side of the take-private - the parent, the purchaser, the merger subsidiary and the funds behind them - how are they related, and which of them merged into the company? Name entities only, not individuals.">
-        <span class="kind">Look-alike entity names</span>
-        <span class="q">Which legal entities make up the buyer side, and which one merged into the company?</span>
+      <button type="button" data-q="Which of the companies in the brochures state certifications or compliance standards, such as SOC 2, and which ones?">
+        <span class="kind">A fact across all brochures</span>
+        <span class="q">Which companies state certifications such as SOC 2?</span>
       </button>
-      <button type="button" data-q="What was the company's revenue for fiscal year 2025?">
-        <span class="kind">Something the wiki doesn’t have</span>
-        <span class="q">What was the company’s revenue for fiscal year 2025?</span>
+      <button type="button" data-q="What is Barndoor's annual revenue and how many employees does it have?">
+        <span class="kind">Something the brochures don’t say</span>
+        <span class="q">What is Barndoor’s annual revenue and headcount?</span>
       </button>
     </div>
     <p class="promise">Read-only: asking never changes the wiki.</p>
