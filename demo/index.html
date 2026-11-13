@@ -3,129 +3,203 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Ask the deal wiki</title>
+<title>Deal wiki: Squarespace take-private</title>
 <link rel="icon" href="data:,">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap" rel="stylesheet">
 <style>
   :root {
-    --paper: #f1f3f5;
+    --panel: #13263a;
+    --panel-2: #1b3350;
+    --panel-ink: #eef3f8;
+    --panel-muted: #a9b9ca;
+    --panel-rule: #2c4663;
+    --brass: #d9a441;
+    --bg: #f4f6f9;
     --sheet: #ffffff;
-    --ink: #1d2733;
-    --muted: #5a6778;
-    --rule: #ccd4dd;
-    --source: #2e5e86;
-    --source-bg: #dce6f0;
+    --ink: #172331;
+    --muted: #5d6b7b;
+    --rule: #e1e6ec;
+    --ref: #8a5a12;
+    --ref-bg: #f8eed9;
     --alert: #8a4b00;
-    --alert-bg: #f6ead9;
+    --alert-bg: #f7ecdc;
     color-scheme: light;
   }
   @media (prefers-color-scheme: dark) {
     :root {
-      --paper: #161d25;
-      --sheet: #1d2630;
-      --ink: #e4e9ef;
-      --muted: #9aa6b4;
-      --rule: #2e3946;
-      --source: #a9c9e6;
-      --source-bg: #22344a;
+      --panel: #0d1a28;
+      --panel-2: #152638;
+      --panel-rule: #24384f;
+      --bg: #111922;
+      --sheet: #18222d;
+      --ink: #e6ebf1;
+      --muted: #9aa7b5;
+      --rule: #29374a;
+      --ref: #f0c674;
+      --ref-bg: #3a2f17;
       --alert: #f0c27a;
       --alert-bg: #3a2c17;
       color-scheme: dark;
     }
   }
   * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; }
   body {
-    margin: 0;
-    background: var(--paper);
-    color: var(--ink);
-    font: 400 1rem/1.5 "Public Sans", "Helvetica Neue", Arial, sans-serif;
+    background: var(--bg); color: var(--ink);
+    font: 400 1rem/1.55 "Public Sans", "Helvetica Neue", Arial, sans-serif;
   }
-  main { max-width: 46rem; margin: 0 auto; padding: 3rem 1.25rem 4rem; }
-  h1 { font-size: 2rem; font-weight: 700; letter-spacing: -0.01em; margin: 0 0 0.5rem; }
-  .lede { color: var(--muted); margin: 0 0 2rem; max-width: 38rem; }
-  label { display: block; font-weight: 600; margin-bottom: 0.4rem; }
-  textarea {
-    width: 100%; min-height: 6rem; resize: vertical;
-    padding: 0.75rem 0.85rem; border: 1px solid var(--rule); border-radius: 6px;
-    background: var(--sheet); color: var(--ink); font: inherit;
-  }
-  .row { display: flex; align-items: center; gap: 1rem; margin-top: 0.75rem; flex-wrap: wrap; }
-  button.ask {
-    font: 600 1rem/1 "Public Sans", sans-serif; padding: 0.7rem 1.4rem;
-    background: var(--ink); color: var(--paper); border: 0; border-radius: 6px; cursor: pointer;
-  }
-  button.ask:disabled { opacity: 0.5; cursor: progress; }
-  .hint { color: var(--muted); font-size: 0.875rem; }
-  .examples { margin: 1.5rem 0 0; padding: 0; list-style: none; }
-  .examples p { margin: 0 0 0.4rem; font-weight: 600; }
-  .examples button {
-    display: block; text-align: left; width: 100%; margin: 0 0 0.35rem;
-    padding: 0.45rem 0.7rem; background: transparent; color: var(--ink);
-    border: 1px solid var(--rule); border-radius: 6px; font: inherit; font-size: 0.925rem; cursor: pointer;
-  }
-  .examples button:hover { border-color: var(--muted); }
-  :focus-visible { outline: 2px solid var(--source); outline-offset: 2px; }
+  :focus-visible { outline: 2px solid var(--brass); outline-offset: 2px; }
 
-  #result { margin-top: 2.5rem; }
-  .asked { color: var(--muted); font-size: 0.925rem; margin: 0 0 0.75rem; }
-  .answer {
-    background: var(--sheet); border: 1px solid var(--rule); border-radius: 8px;
-    padding: 1.4rem 1.5rem;
-    font: 400 1.0625rem/1.65 "Source Serif 4", Georgia, serif;
+  /* Left: a navy panel that holds everything you do. Right: the answer, set as a document. */
+  .layout { display: grid; grid-template-columns: minmax(22rem, 28rem) minmax(0, 1fr); min-height: 100%; }
+  @media (max-width: 60rem) { .layout { grid-template-columns: 1fr; } }
+
+  .ask-col {
+    background: var(--panel); color: var(--panel-ink);
+    padding: 2.5rem 2.25rem 3rem;
+    position: sticky; top: 0; height: 100vh; overflow-y: auto;
   }
-  .answer p { margin: 0 0 0.9rem; }
-  .answer p:last-child, .answer ul:last-child { margin-bottom: 0; }
-  .answer ul { margin: 0 0 0.9rem; padding-left: 1.2rem; }
-  .answer li { margin-bottom: 0.35rem; }
-  .src {
-    font: 500 0.8rem/1.3 "Public Sans", sans-serif; color: var(--source); background: var(--source-bg);
-    padding: 0.1rem 0.4rem; border-radius: 4px; white-space: normal;
+  @media (max-width: 60rem) { .ask-col { position: static; height: auto; padding: 2rem 1.5rem 2.5rem; } }
+
+  .mark { display: flex; align-items: center; gap: 0.6rem; margin-bottom: 2.75rem; font-weight: 700; letter-spacing: 0.01em; }
+  .mark i { width: 0.7rem; height: 0.7rem; border-radius: 2px; background: var(--brass); display: inline-block; }
+  .mark span { color: var(--panel-muted); font-weight: 500; }
+
+  h1 { font-size: 2rem; line-height: 1.15; font-weight: 700; letter-spacing: -0.02em; margin: 0 0 0.9rem; }
+  .lede { color: var(--panel-muted); margin: 0 0 2rem; font-size: 0.95rem; }
+  label { display: block; font-weight: 600; font-size: 0.9rem; margin-bottom: 0.5rem; }
+  textarea {
+    width: 100%; min-height: 8rem; resize: vertical;
+    padding: 0.9rem 1rem; border: 1px solid var(--panel-rule); border-radius: 10px;
+    background: var(--panel-2); color: var(--panel-ink); font: inherit;
   }
-  .note {
-    margin: 0 0 1rem; padding: 0.75rem 1rem; border-radius: 6px;
-    background: var(--alert-bg); color: var(--alert);
+  textarea::placeholder { color: var(--panel-muted); }
+  textarea:focus { outline: none; border-color: var(--brass); box-shadow: 0 0 0 3px rgba(217, 164, 65, 0.25); }
+  .row { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin-top: 0.9rem; }
+  .keys { color: var(--panel-muted); font-size: 0.8rem; }
+  button.ask {
+    font: 700 0.95rem/1 "Public Sans", sans-serif; padding: 0.8rem 1.75rem;
+    background: var(--brass); color: #1a1408; border: 0; border-radius: 8px; cursor: pointer;
   }
-  dl.cost {
-    display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0.75rem;
-    margin: 1rem 0 0; padding: 0;
+  button.ask:hover { filter: brightness(1.06); }
+  button.ask:disabled { opacity: 0.6; cursor: progress; }
+
+  .examples { margin-top: 2.75rem; }
+  .examples h2 { font-size: 0.85rem; font-weight: 600; color: var(--panel-muted); margin: 0 0 0.75rem; }
+  .examples button {
+    display: block; width: 100%; text-align: left; cursor: pointer;
+    padding: 0.85rem 1rem; margin-bottom: 0.6rem;
+    background: var(--panel-2); border: 1px solid transparent; border-radius: 10px;
+    color: var(--panel-ink); font: inherit;
   }
-  dl.cost div { border-top: 1px solid var(--rule); padding-top: 0.5rem; }
-  dl.cost dt { color: var(--muted); font-size: 0.8rem; }
-  dl.cost dd { margin: 0; font-weight: 600; font-variant-numeric: tabular-nums; }
-  .working { display: flex; align-items: center; gap: 0.75rem; color: var(--muted); }
-  .bar { flex: 1; height: 3px; background: var(--rule); border-radius: 2px; overflow: hidden; }
-  .bar span { display: block; width: 30%; height: 100%; background: var(--source); animation: slide 1.6s ease-in-out infinite; }
-  @keyframes slide { from { transform: translateX(-100%); } to { transform: translateX(340%); } }
-  @media (prefers-reduced-motion: reduce) { .bar span { animation: none; width: 100%; opacity: 0.4; } }
-  @media (max-width: 34rem) { dl.cost { grid-template-columns: repeat(2, minmax(0, 1fr)); } h1 { font-size: 1.6rem; } }
+  .examples button:hover { border-color: var(--brass); }
+  .examples .kind { display: block; color: var(--brass); font-size: 0.75rem; font-weight: 600; margin-bottom: 0.2rem; }
+  .examples .q { font-size: 0.9rem; line-height: 1.4; }
+  .promise { margin-top: 2rem; color: var(--panel-muted); font-size: 0.8rem; }
+
+  .main { padding: 3rem 3rem 4rem; }
+  @media (max-width: 60rem) { .main { padding: 1.5rem 1rem 3rem; } }
+  .doc {
+    max-width: 50rem; margin: 0 auto; background: var(--sheet); border: 1px solid var(--rule);
+    border-radius: 14px; box-shadow: 0 1px 2px rgba(15, 30, 50, 0.04), 0 8px 24px rgba(15, 30, 50, 0.06);
+    min-height: 28rem; padding: 3rem 3.25rem;
+  }
+  @media (max-width: 34rem) { .doc { padding: 1.75rem 1.4rem; } }
+
+  .empty { color: var(--muted); max-width: 32rem; margin: 3rem auto; text-align: center; }
+  .empty .glyph { width: 3rem; height: 3rem; margin: 0 auto 1.25rem; border-radius: 12px; background: var(--ref-bg); color: var(--ref);
+    display: flex; align-items: center; justify-content: center; font: 700 1.2rem/1 "Source Serif 4", Georgia, serif; }
+  .empty h2 { color: var(--ink); font-size: 1.25rem; margin: 0 0 0.6rem; }
+  .empty p { margin: 0 0 0.75rem; }
+
+  .asked { font-size: 1.35rem; font-weight: 700; line-height: 1.3; letter-spacing: -0.01em; margin: 0 0 1.5rem; padding-bottom: 1.25rem; border-bottom: 1px solid var(--rule); }
+  .body { font: 400 1.075rem/1.75 "Source Serif 4", Georgia, serif; }
+  .body p { margin: 0 0 1.1rem; }
+  .body ul { margin: 0 0 1.1rem; padding-left: 1.25rem; }
+  .body li { margin-bottom: 0.5rem; }
+  sup.ref a {
+    font: 700 0.68rem/1 "Public Sans", sans-serif; color: var(--ref); text-decoration: none;
+    background: var(--ref-bg); padding: 0.15rem 0.35rem; border-radius: 4px; margin-left: 0.12rem;
+  }
+  .sources { margin-top: 2rem; padding: 1.25rem 1.4rem; background: var(--bg); border-radius: 10px; }
+  .sources h3 { font-size: 0.85rem; font-weight: 700; margin: 0 0 0.6rem; }
+  .sources ol { margin: 0; padding-left: 1.5rem; color: var(--muted); font-size: 0.85rem; }
+  .sources li { margin-bottom: 0.3rem; }
+  .sources li:target { color: var(--ink); font-weight: 600; }
+  .note { margin: 0 0 1.25rem; padding: 0.8rem 1rem; border-radius: 8px; background: var(--alert-bg); color: var(--alert); }
+
+  dl.cost { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0.75rem; margin: 1.75rem 0 0; }
+  @media (max-width: 34rem) { dl.cost { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  dl.cost div { background: var(--bg); border-radius: 10px; padding: 0.8rem 0.9rem; }
+  dl.cost dt { color: var(--muted); font-size: 0.75rem; }
+  dl.cost dd { margin: 0.2rem 0 0; font-weight: 700; font-size: 1.15rem; font-variant-numeric: tabular-nums; }
+  .tools { margin-top: 1.25rem; }
+  .tools button {
+    font: 600 0.85rem/1 "Public Sans", sans-serif; padding: 0.6rem 0.95rem; cursor: pointer;
+    background: none; color: var(--ink); border: 1px solid var(--rule); border-radius: 8px;
+  }
+  .tools button:hover { border-color: var(--muted); }
+
+  .working .status { color: var(--muted); margin: 0 0 1.5rem; }
+  .line { height: 0.85rem; border-radius: 4px; background: var(--rule); margin-bottom: 0.85rem; animation: pulse 1.6s ease-in-out infinite; }
+  .line:nth-child(3) { width: 92%; } .line:nth-child(4) { width: 78%; } .line:nth-child(5) { width: 85%; } .line:nth-child(6) { width: 55%; }
+  @keyframes pulse { 50% { opacity: 0.45; } }
+  @media (prefers-reduced-motion: reduce) { .line { animation: none; } }
 </style>
 </head>
 <body>
-<main>
-  <h1>Ask the deal wiki</h1>
-  <p class="lede">Answers come only from a wiki an agent built from the Squarespace take-private filings.
-    Each fact names the wiki page it came from and the date it was true. If the wiki doesn’t cover
-    a question, the answer says so.</p>
 
-  <label for="q">Your question</label>
-  <textarea id="q" maxlength="1000" placeholder="For example: what did the buyer pay per share?"></textarea>
-  <div class="row">
-    <button class="ask" id="ask">Ask</button>
-    <span class="hint" id="hint">An answer usually takes under a minute.</span>
+
+<div class="layout">
+  <section class="ask-col" aria-label="Ask a question">
+    <div class="mark"><i></i>Deal wiki <span>Squarespace take-private</span></div>
+    <h1>Ask the deal’s documents</h1>
+    <p class="lede">An agent read the deal’s SEC filings once and wrote them into a wiki. Answers come only from
+      that wiki, with a numbered source for every fact. If the wiki doesn’t cover something, the answer says so.</p>
+
+    <label for="q">Your question</label>
+    <textarea id="q" maxlength="1000" placeholder="For example: what did the buyer pay per share?"></textarea>
+    <div class="row">
+      <span class="keys">⌘ + Enter to ask</span>
+      <button class="ask" id="ask">Ask</button>
+    </div>
+
+    <div class="examples">
+      <h2>Try a question from the notebook</h2>
+      <button type="button" data-q="What is the per-share merger consideration, and how did it change during the process?">
+        <span class="kind">A price that changed across filings</span>
+        <span class="q">What is the per-share merger consideration, and how did it change?</span>
+      </button>
+      <button type="button" data-q="I've seen more than one FY2023 adjusted EBITDA figure in this room. Reconcile them - are they comparable?">
+        <span class="kind">Two figures on different bases</span>
+        <span class="q">Reconcile the FY2023 adjusted EBITDA figures: are they comparable?</span>
+      </button>
+      <button type="button" data-q="Which legal entities make up the buyer side of the take-private - the parent, the purchaser, the merger subsidiary and the funds behind them - how are they related, and which of them merged into the company? Name entities only, not individuals.">
+        <span class="kind">Look-alike entity names</span>
+        <span class="q">Which legal entities make up the buyer side, and which one merged into the company?</span>
+      </button>
+      <button type="button" data-q="What was the company's revenue for fiscal year 2025?">
+        <span class="kind">Something the wiki doesn’t have</span>
+        <span class="q">What was the company’s revenue for fiscal year 2025?</span>
+      </button>
+    </div>
+    <p class="promise">Read-only: asking never changes the wiki.</p>
+  </section>
+
+  <div class="main">
+  <main class="doc" id="result" aria-live="polite">
+    <div class="empty">
+      <div class="glyph">1</div>
+      <h2>Answers appear here</h2>
+      <p>Each one opens a fresh, read-only session on the wiki, reads what it needs, and cites a source and date
+        for every fact.</p>
+      <p>Below the answer you’ll see how many wiki pages it read, the tokens, the cost and the time it took.</p>
+    </div>
+  </main>
   </div>
-
-  <div class="examples">
-    <p>Or try one of these</p>
-    <button type="button" data-q="What is the per-share merger consideration, and how did it change during the process?">What is the per-share merger consideration, and how did it change?</button>
-    <button type="button" data-q="I've seen more than one FY2023 adjusted EBITDA figure in this room. Reconcile them - are they comparable?">Reconcile the FY2023 adjusted EBITDA figures: are they comparable?</button>
-    <button type="button" data-q="Which legal entities make up the buyer side of the take-private - the parent, the purchaser, the merger subsidiary and the funds behind them - how are they related, and which of them merged into the company? Name entities only, not individuals.">Which legal entities make up the buyer side, and which one merged into the company?</button>
-    <button type="button" data-q="What was the company's revenue for fiscal year 2025?">What was the company’s revenue for fiscal year 2025?</button>
-  </div>
-
-  <section id="result" aria-live="polite"></section>
-</main>
+</div>
 
 <script>
 const box = document.getElementById("q");
@@ -146,35 +220,52 @@ function el(tag, cls, text) {
 }
 
 // The answer comes from documents an agent read, so it is never inserted as HTML: it is split into
-// paragraphs, bullets and inline pieces, and each piece goes in as text. Source tags get their own style.
+// paragraphs, bullets and inline pieces, and each piece goes in as text. Citations become numbered notes.
 const INLINE = /(\[\[[^\]\n]+\]\]|\[[^\[\]\n]*as-of[^\[\]\n]*\]|\[source:[^\[\]\n]*\]|\*\*[^*\n]+\*\*)/g;
-function inline(parent, text) {
+function inline(parent, text, sources) {
   for (const part of text.split(INLINE)) {
     if (!part) continue;
-    if (part.startsWith("**") && part.endsWith("**")) parent.appendChild(el("strong", "", part.slice(2, -2)));
-    else if (part.startsWith("[")) parent.appendChild(el("span", "src", part.replace(/^\[\[?|\]?\]$/g, "")));
-    else parent.appendChild(document.createTextNode(part));
+    if (part.startsWith("**") && part.endsWith("**")) {
+      parent.appendChild(el("strong", "", part.slice(2, -2)));
+    } else if (part.startsWith("[")) {
+      const label = part.replace(/^\[\[?|\]?\]$/g, "").replace(/^source:\s*/, "");
+      let n = sources.indexOf(label) + 1;
+      if (!n) { sources.push(label); n = sources.length; }
+      const sup = el("sup", "ref"); const a = el("a", "", String(n));
+      a.href = "#src-" + n; a.title = label; sup.appendChild(a); parent.appendChild(sup);
+    } else {
+      parent.appendChild(document.createTextNode(part));
+    }
   }
 }
 function renderAnswer(text) {
-  const wrap = el("div", "answer");
+  const sources = [];
+  const body = el("div", "body");
   for (const block of text.split(/\n\s*\n/)) {
     const lines = block.split("\n").filter(l => l.trim());
-    if (!lines.length) continue;
     let list = null, para = null;
     for (const line of lines) {
       const m = line.match(/^\s*[*\-•]\s+(.*)$/);
       if (m) {
-        if (!list) { list = el("ul"); wrap.appendChild(list); para = null; }
-        const li = el("li"); inline(li, m[1]); list.appendChild(li);
+        if (!list) { list = el("ul"); body.appendChild(list); para = null; }
+        const li = el("li"); inline(li, m[1], sources); list.appendChild(li);
       } else {
-        if (!para) { para = el("p"); wrap.appendChild(para); list = null; }
+        if (!para) { para = el("p"); body.appendChild(para); list = null; }
         else para.appendChild(document.createElement("br"));
-        inline(para, line.replace(/^#+\s*/, ""));
+        inline(para, line.replace(/^#+\s*/, ""), sources);
       }
     }
   }
-  return wrap;
+  const frag = [body];
+  if (sources.length) {
+    const box = el("div", "sources");
+    box.appendChild(el("h3", "", "Sources in the wiki"));
+    const ol = el("ol");
+    sources.forEach((s, i) => { const li = el("li", "", s); li.id = "src-" + (i + 1); ol.appendChild(li); });
+    box.appendChild(ol);
+    frag.push(box);
+  }
+  return frag;
 }
 
 function costGrid(r) {
@@ -195,29 +286,35 @@ async function ask() {
   const question = box.value.trim();
   if (!question) { box.focus(); return; }
   askButton.disabled = true;
-  result.replaceChildren();
   const working = el("div", "working");
-  const label = el("span", "", "Reading the wiki… 0 s");
-  const bar = el("div", "bar"); bar.appendChild(el("span"));
-  working.append(label, bar);
-  result.appendChild(working);
+  const status = el("p", "status", "Reading the wiki… 0 s");
+  working.append(el("p", "asked", question), status);
+  for (let i = 0; i < 4; i++) working.appendChild(el("div", "line"));
+  result.replaceChildren(working);
   const t0 = Date.now();
-  const timer = setInterval(() => { label.textContent = "Reading the wiki… " + Math.round((Date.now() - t0) / 1000) + " s"; }, 1000);
+  const timer = setInterval(() => { status.textContent = "Reading the wiki… " + Math.round((Date.now() - t0) / 1000) + " s"; }, 1000);
   try {
     const res = await fetch("/ask", {
       method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ question }),
     });
     const data = await res.json();
-    result.replaceChildren();
+    result.replaceChildren(el("p", "asked", question));
     if (!res.ok) {
       result.appendChild(el("p", "note", data.detail || ("The request failed with status " + res.status + ". Ask again.")));
       return;
     }
-    result.appendChild(el("p", "asked", "You asked: " + question));
     if (data.outcome_note) result.appendChild(el("p", "note", "This answer may be incomplete: " + data.outcome_note + "."));
     if (!data.session_archived) result.appendChild(el("p", "note", "The session " + data.session_id + " could not be archived. Close it from the terminal."));
-    result.appendChild(renderAnswer(data.answer || "No answer came back. Ask again."));
-    result.appendChild(costGrid(data));
+    const answer = data.answer || "No answer came back. Ask again.";
+    result.append(...renderAnswer(answer), costGrid(data));
+    const tools = el("div", "tools"); const copy = el("button", "", "Copy answer");
+    copy.type = "button";
+    copy.addEventListener("click", async () => {
+      try { await navigator.clipboard.writeText(answer); copy.textContent = "Copied"; }
+      catch { copy.textContent = "Couldn’t copy"; }
+      setTimeout(() => { copy.textContent = "Copy answer"; }, 1500);
+    });
+    tools.appendChild(copy); result.appendChild(tools);
   } catch (err) {
     result.replaceChildren(el("p", "note", "The app didn’t respond: " + err.message + ". Check that the server is still running, then ask again."));
   } finally {
