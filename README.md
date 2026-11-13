@@ -7,6 +7,41 @@ from `anthropics/claude-quickstarts`, used under its MIT license (see `LICENSE`)
 Codelab (step-by-step walkthrough of the run and the demo):
 https://prekshapraveen2502.github.io/knowledge-wiki/knowledge-wiki-codelab/
 
+## The assignment's input: the hackathon brochures
+
+The assignment asks for the knowledge-wiki agent built from the images from the in-class hackathon:
+12 photos of AI companies' career-fair brochures, in `brochures/images/`. I first ran the quickstart on its
+own worked example (the Squarespace SEC filings, described further down); the brochure run reuses the same
+notebook, agents and checks.
+
+- `brochures/convert_brochures.py` turns each photo upright, shrinks it, wraps it in a one-page PDF and sends
+  it through the kit's `normalize_pdf`, because the kit's `normalize_any` has no branch for images. It writes
+  one `brochures/docs/IMG_xxxx.txt` per photo (not in Git) with a `[SOURCE: ...]` provenance line.
+- `brochures_knowledge_wiki.ipynb` is a copy of the notebook, run with `COOKBOOK_DOCS=brochures/docs`. Two
+  lines differ from the original: the extractor's opening sentence and the store's description no longer
+  name the Squarespace deal. The rest of the prompts' wording (slug examples, red-flag categories) is unchanged.
+- The demo app's analyst prompt (`demo/demo_config.py`) and its example questions now describe the brochures.
+
+Results, from the saved outputs of `brochures_knowledge_wiki.ipynb`:
+
+| What | Brochure run | Notebook section |
+| --- | --- | --- |
+| Corpus | 12 documents, 34 KB of text, 1 batch | Batch the documents |
+| Build cost, estimated before running | $3.21 | The consolidation prompts |
+| Build cost, as the platform metered it | $0.32 (budget $10) | Build cost by agent |
+| Build time | 11.6 minutes | Run the build |
+| Documents filed / failures | 12 of 12 / none | Run the build (the lead agent's report) |
+| Open questions resolved / unresolvable / still open | 1 / 9 / 25 | Run the build (the lead agent's report) |
+| Wiki size | 46 files, 70,386 bytes; `_schema.md` unchanged | Read the wiki |
+
+All checks on the platform's records passed (4 threads, phases in order, the batch read by the extractor and
+the analyzer, no document unfiled). The file check found no stubs, unindexed files or name mismatches, and 2
+dangling links, both in the wiki format's own `SKILL.md`.
+
+Not run on the brochures: the notebook's question cells and its wiki-versus-raw comparison, since their
+questions are about the Squarespace deal. Brochure questions are asked through the demo app, which points at
+the brochure wiki (`WIKI_STORE_ID` in `.env`).
+
 What I changed from the quickstart as shipped:
 
 - `distill_documents_into_knowledge_wiki.ipynb`: no code changes. Its saved outputs are now from my run
