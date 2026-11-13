@@ -3,28 +3,28 @@
   "format": "html",
   "prefix": "https://storage.googleapis.com",
   "mainga": "UA-49880327-14",
-  "updated": "2026-11-12T16:12:39-05:00",
+  "updated": "2026-11-13T14:36:44-05:00",
   "id": "knowledge-wiki-codelab",
-  "duration": 0,
-  "title": "Build and query a knowledge wiki with Claude Managed Agents",
-  "authors": "Preksha Praveen",
-  "summary": "Build a provenance-backed knowledge wiki from SEC filings with Claude Managed Agents, check it, ask it questions, and put a small web demo on top.",
+  "duration": 90,
+  "title": "Knowledge wiki with Claude Managed Agents",
+  "authors": "Preksha Praveen (DAMG 7245, Fall 2026)",
+  "summary": "Build a provenance-backed knowledge wiki with Claude Managed Agents from SEC filings and from photos of AI companies' career-fair brochures, verify it, and ask it questions from a small web app.",
   "source": "codelab/knowledge-wiki-codelab.md",
   "theme": "",
   "status": [
-    "draft"
+    "published"
   ],
   "category": [
-    "ai",
-    "agents",
-    "dataengineering"
+    "data-engineering"
   ],
   "tags": [
+    "brochures",
     "claude",
     "fastapi",
     "knowledge-wiki",
-    "managed-agents"
+    "managed-agents",
+    "sec-filings"
   ],
-  "feedback": "https://github.com/prekshapraveen2502/knowledge-wiki/issues",
+  "feedback": "https://github.com/prekshapraveen2502/knowledge-wiki",
   "url": "knowledge-wiki-codelab"
 }
